@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>巡拝スタンプ帳</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  :root {
+    --washi: #f6f1e6;
+    --washi-deep: #ede5d3;
+    --sumi: #2b2622;
+    --sumi-soft: #6b6156;
+    --shu: #b5342a;
+    --shu-deep: #93261e;
+    --ai: #2c4a6e;
+    --line: #d8cdb8;
+    --card: #fbf8f0;
+    --ok: #3d7a4a;
+    --shadow: 0 1px 3px rgba(60, 45, 20, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --washi: #1c1916;
+      --washi-deep: #14120f;
+      --sumi: #e8e0d2;
+      --sumi-soft: #a89c8a;
+      --shu: #d4574c;
+      --shu-deep: #e07a70;
+      --ai: #7fa3cc;
+      --line: #3d362e;
+      --card: #262220;
+      --ok: #6db97d;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+  :root[data-theme="light"] {
+    --washi: #f6f1e6;
+    --washi-deep: #ede5d3;
+    --sumi: #2b2622;
+    --sumi-soft: #6b6156;
+    --shu: #b5342a;
+    --shu-deep: #93261e;
+    --ai: #2c4a6e;
+    --line: #d8cdb8;
+    --card: #fbf8f0;
+    --ok: #3d7a4a;
+    --shadow: 0 1px 3px rgba(60, 45, 20, .12);
+  }
+  :root[data-theme="dark"] {
+    --washi: #1c1916;
+    --washi-deep: #14120f;
+    --sumi: #e8e0d2;
+    --sumi-soft: #a89c8a;
+    --shu: #d4574c;
+    --shu-deep: #e07a70;
+    --ai: #7fa3cc;
+    --line: #3d362e;
+    --card: #262220;
+    --ok: #6db97d;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--washi);
+    color: var(--sumi);
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 76px;
+  }
+  .serif { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; }
+
+  /* ---------- header ---------- */
+  header {
+    padding: 18px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  header h1 {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: .12em;
+  }
+  header h1 .kan {
+    display: inline-block;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--shu);
+    color: var(--washi);
+    font-size: 15px;
+    line-height: 30px;
+    text-align: center;
+    letter-spacing: 0;
+    vertical-align: 3px;
+    margin-right: 8px;
+  }
+  #gpsChip {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--sumi-soft);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  #gpsChip.on { border-color: var(--ok); color: var(--ok); }
+  #gpsChip.err { border-color: var(--shu); color: var(--shu); }
+
+  main { padding: 0 16px; max-width: 560px; margin: 0 auto; }
+
+  /* ---------- progress ---------- */
+  .progress {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 4px 0 14px;
+  }
+  .progress .count {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 15px;
+    color: var(--sumi-soft);
+    letter-spacing: .08em;
+  }
+  .progress .count b {
+    color: var(--shu);
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar {
+    flex: 1; height: 4px; margin-left: 16px;
+    background: var(--washi-deep); border-radius: 2px; overflow: hidden;
+  }
+  .bar i {
+    display: block; height: 100%;
+    background: var(--shu);
+    border-radius: 2px;
+    transition: width .6s ease;
+  }
+
+  /* ---------- temple cards ---------- */
+  .temple {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .temple .info { flex: 1; min-width: 0; }
+  .temple .name {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-wrap: balance;
+  }
+  .temple .meta {
+    font-size: 12.5px;
+    color: var(--sumi-soft);
+    display: flex; gap: 10px; align-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .temple .meta .dir { color: var(--ai); }
+  .fuda {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--shu);
+    border: 1px solid var(--shu);
+    border-radius: 4px;
+    padding: 0 5px;
+    margin-right: 7px;
+    vertical-align: 2px;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .temple.done { opacity: .92; }
+  .temple .note { font-size: 12px; color: var(--sumi-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .btn-checkin {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--shu);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: .05em;
+  }
+  .btn-checkin:disabled {
+    background: var(--washi-deep);
+    color: var(--sumi-soft);
+    cursor: default;
+  }
+  .mini-stamp {
+    width: 52px; height: 52px;
+    border: 2px solid var(--shu);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--shu);
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 13px;
+    font-weight: 600;
+    writing-mode: vertical-rl;
+    letter-spacing: .1em;
+    flex-shrink: 0;
+    transform: rotate(-4deg);
+  }
+
+  /* ---------- stamp book ---------- */
+  .book {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+    padding-bottom: 12px;
+  }
+  .stamp-cell {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    aspect-ratio: 3 / 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stamp-cell .num {
+    position: absolute; top: 8px; left: 10px;
+    font-size: 11px; color: var(--sumi-soft);
+    font-family: "Hiragino Mincho ProN", serif;
+  }
+  .seal {
+    width: 88px; height: 88px;
+    border: 3px solid var(--shu);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    color: var(--shu);
+  }
+  .seal::before {
+    content: "";
+    position: absolute; inset: 4px;
+    border: 1px solid var(--shu);
+    border-radius: 50%;
+    opacity: .7;
+  }
+  .seal .sname {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    writing-mode: vertical-rl;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    max-height: 70px;
+    overflow: hidden;
+    line-height: 1.15;
+  }
+  .stamp-cell.pending .seal {
+    border-style: dashed;
+    border-color: var(--line);
+    color: var(--line);
+  }
+  .stamp-cell.pending .seal::before { display: none; }
+  .stamp-cell .sdate {
+    font-size: 11px;
+    color: var(--sumi-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .stamp-cell .tname {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .stamp-cell.stamped .seal { animation: none; }
+  @keyframes press {
+    0% { transform: scale(2.2) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(.95) rotate(-3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-3deg); }
+  }
+  .stamp-cell.fresh .seal { animation: press .5s ease-out both; }
+  @media (prefers-reduced-motion: reduce) {
+    .stamp-cell.fresh .seal { animation: none; }
+    .bar i { transition: none; }
+  }
+
+  .mangan {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--shu);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .mangan .big {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 28px;
+    color: var(--shu);
+    letter-spacing: .3em;
+    font-weight: 700;
+  }
+  .mangan p { margin: 6px 0 0; font-size: 13px; color: var(--sumi-soft); }
+
+  /* ---------- forms / settings ---------- */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .panel h2 {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 15px;
+    margin: 0 0 12px;
+    letter-spacing: .15em;
+    color: var(--sumi-soft);
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  label.field { display: block; font-size: 12.5px; color: var(--sumi-soft); margin-bottom: 10px; }
+  input[type=text], textarea, select {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--washi);
+    color: var(--sumi);
+  }
+  input:focus, textarea:focus, select:focus, button:focus-visible {
+    outline: 2px solid var(--ai);
+    outline-offset: 1px;
+  }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--washi);
+    color: var(--sumi);
+    cursor: pointer;
+    letter-spacing: .03em;
+  }
+  .btn.primary { background: var(--ai); border-color: var(--ai); color: #fff; }
+  .btn.danger { color: var(--shu); border-color: var(--shu); background: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 12.5px; }
+  .hint { font-size: 12px; color: var(--sumi-soft); margin: 6px 0 0; }
+
+  .t-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .t-row:last-child { border-bottom: none; }
+  .t-row .nm { flex: 1; font-weight: 600; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-row .coord { font-size: 11px; color: var(--sumi-soft); font-variant-numeric: tabular-nums; }
+
+  .empty {
+    text-align: center;
+    padding: 44px 20px;
+    color: var(--sumi-soft);
+  }
+  .empty .mark {
+    font-family: "Hiragino Mincho ProN", serif;
+    font-size: 40px;
+    color: var(--line);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .empty p { margin: 4px 0; font-size: 14px; }
+
+  /* ---------- tabs ---------- */
+  nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+  }
+  nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 10px 0 12px;
+    color: var(--sumi-soft);
+    cursor: pointer;
+    letter-spacing: .1em;
+  }
+  nav button .ico { display: block; font-size: 19px; margin-bottom: 2px; }
+  nav button.active { color: var(--shu); font-weight: 700; }
+
+  .toast {
+    position: fixed;
+    left: 50%; bottom: 90px;
+    transform: translateX(-50%);
+    background: var(--sumi);
+    color: var(--washi);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; }
+  .hidden { display: none !important; }
+</style>
+
+<header>
+  <h1><span class="kan">巡</span>巡拝スタンプ帳</h1>
+  <button id="gpsChip" type="button">GPS 停止中 ▶</button>
+</header>
+
+<main>
+  <!-- ============ 巡拝タブ ============ -->
+  <section id="view-junpai">
+    <div id="gpsBanner" class="panel hidden" style="border-color:var(--shu)">
+      <p id="gpsBannerMsg" style="margin:0 0 10px;font-size:13.5px"></p>
+      <div class="row">
+        <button class="btn small" id="btnRetryGps" type="button">もう一度試す</button>
+        <button class="btn small primary" id="btnNoGps" type="button">距離判定なしで使う</button>
+      </div>
+    </div>
+    <div class="progress">
+      <span class="count serif"><b id="cntDone">0</b> / <span id="cntAll">0</span> ヶ寺</span>
+      <div class="bar"><i id="barFill" style="width:0%"></i></div>
+    </div>
+    <div id="templeList"></div>
+    <div id="junpaiEmpty" class="empty hidden">
+      <span class="mark">巡</span>
+      <p>まだお寺が登録されていません。</p>
+      <p>「設定」タブからお寺を追加してください。</p>
+      <button class="btn primary" style="margin-top:12px" onclick="showTab('settings')">お寺を登録する</button>
+    </div>
+  </section>
+
+  <!-- ============ スタンプ帳タブ ============ -->
+  <section id="view-book" class="hidden">
+    <div id="manganBox" class="mangan hidden">
+      <div class="big">満　願</div>
+      <p>すべての霊場を巡拝されました。おめでとうございます。</p>
+    </div>
+    <div class="book" id="bookGrid"></div>
+    <div id="bookEmpty" class="empty hidden">
+      <span class="mark">印</span>
+      <p>スタンプ帳はまだ白紙です。</p>
+      <p>お寺を登録して巡拝を始めましょう。</p>
+    </div>
+  </section>
+
+  <!-- ============ 設定タブ ============ -->
+  <section id="view-settings" class="hidden">
+
+    <div class="panel">
+      <h2>お寺を追加</h2>
+      <label class="field">寺院名（例：第一番 霊山寺）
+        <input type="text" id="inName" placeholder="寺院名を入力">
+      </label>
+      <label class="field">メモ（任意：宗派・御本尊など）
+        <input type="text" id="inNote" placeholder="任意">
+      </label>
+      <label class="field">座標（緯度, 経度）
+        <input type="text" id="inCoord" placeholder="例：34.1265, 134.5028">
+      </label>
+      <p class="hint">Googleマップでお寺を長押し → 表示された座標をタップしてコピー → ここに貼り付け。または現地でボタン一つで登録できます。</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="btnHere" type="button">現在地で登録</button>
+        <button class="btn primary" id="btnAdd" type="button">追加する</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>登録済みのお寺</h2>
+      <p class="hint" style="margin:0 0 8px">「現在地」＝お寺の位置を今いる場所に修正（位置がおおよその札所は現地で押すと正確になります）</p>
+      <div id="settingsList"></div>
+      <p class="hint" id="settingsEmpty">まだ登録がありません。</p>
+      <div style="margin-top:14px">
+        <button class="btn small" id="btnPreset" type="button">綾部西国観音霊場の札所リストを入れ直す</button>
+      </div>
+      <p class="hint">三十三ヶ所＋番外六ヶ寺を最初の状態に戻します。スタンプは残りますが、位置の修正や自分で追加したお寺は消えます。</p>
+    </div>
+
+    <div class="panel">
+      <h2>チェックイン設定</h2>
+      <label class="field">チェックインできる距離（お寺からの半径）
+        <select id="selRadius">
+          <option value="50">50 m</option>
+          <option value="100" selected>100 m</option>
+          <option value="200">200 m</option>
+          <option value="500">500 m</option>
+        </select>
+      </label>
+      <label class="field" style="display:flex;align-items:center;gap:8px;margin-top:12px">
+        <input type="checkbox" id="chkManual" style="width:auto;margin:0">
+        距離に関係なくチェックインを許可（動作確認用）
+      </label>
+    </div>
+
+    <div class="panel">
+      <h2>データの控え</h2>
+      <p class="hint" style="margin:0 0 10px">記録はこの端末のブラウザに保存されます。機種変更や消去に備えて、控えを取っておけます。</p>
+      <div class="row">
+        <button class="btn" id="btnExport" type="button">控えを書き出す</button>
+        <button class="btn" id="btnImport" type="button">控えを読み込む</button>
+      </div>
+      <textarea id="ioArea" rows="4" class="hidden" style="margin-top:10px" placeholder="ここに控えのデータを貼り付けて「控えを読み込む」を押してください"></textarea>
+      <div style="margin-top:14px">
+        <button class="btn danger small" id="btnResetStamps" type="button">スタンプを全て消す</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button id="tab-junpai" class="active" type="button" onclick="showTab('junpai')"><span class="ico">🚶</span>巡拝</button>
+  <button id="tab-book" type="button" onclick="showTab('book')"><span class="ico">📕</span>スタンプ帳</button>
+  <button id="tab-settings" type="button" onclick="showTab('settings')"><span class="ico">⚙️</span>設定</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const KEY = "junpai-gps-v1";
+let state = { temples: [], stamps: {}, settings: { radius: 100, allowManual: false } };
+let pos = null;          // {lat, lng, acc}
+let watchId = null;
+let freshId = null;      // 直前に押したスタンプ（アニメ用）
+
+/* ---------- 綾部西国観音霊場 札所プリセット ----------
+   位置の出典: OpenStreetMap / 国土地理院 / NAVITIME / いいお墓 / Yahoo!マップ
+   approx: true は町の代表点などおおよその位置（現地で「現在地」ボタンで修正可） */
+const PRESET = [
+  ["1", "正暦寺", "綾部", "寺町堂ノ前45", 35.292149, 135.262579, 0],
+  ["2", "隆興寺", "綾部", "神宮寺町上藤山2-1", 35.295144, 135.256100, 0],
+  ["3", "宝住寺", "綾部", "味方町井上寺48", 35.292843, 135.269877, 0],
+  ["4", "栴林寺", "中筋・山家", "釜輪町下尾道ノ上", 35.294019, 135.331692, 0],
+  ["5", "照福寺", "中筋・山家", "鷹栖町小丸山33", 35.296513, 135.314301, 0],
+  ["6", "梅岩寺", "物部・西八田", "下八田町水崎26", 35.309649, 135.280317, 0],
+  ["7", "佛南寺", "綾部", "里町向屋敷103", 35.315262, 135.258926, 0],
+  ["8", "圓照寺", "綾部", "多田町後路55", 35.321823, 135.268234, 0],
+  ["9", "東光院", "中筋・山家", "上延町堂ノ奥7", 35.295414, 135.229828, 0],
+  ["10", "慈音寺", "中筋・山家", "上延町新庄15", 35.299454, 135.232066, 0],
+  ["11", "隠龍寺", "中筋・山家", "高津町段30", 35.298710, 135.208420, 0],
+  ["12", "浄泉寺", "豊里東", "位田町田岸63", 35.314053, 135.248932, 0],
+  ["13", "瑠璃寺", "豊里東", "大畠町東谷田40", 35.336369, 135.227219, 1],
+  ["14", "楞厳寺", "豊里東", "舘町楞厳寺6", 35.323750, 135.223572, 0],
+  ["15", "惣持院", "豊里西", "小西町中小路24", 35.332866, 135.207753, 0],
+  ["16", "普門院", "豊里西", "鍛冶屋町定国3", 35.340976, 135.194300, 0],
+  ["17", "天王寺", "豊里西", "小畑町松原116", 35.350265, 135.193541, 0],
+  ["18", "心田院", "綾部", "井倉町館3", 35.304706, 135.246388, 0],
+  ["19", "極楽寺", "物部・西八田", "白道路町鎌倉田34", 35.354041, 135.251756, 0],
+  ["20", "満福寺", "物部・西八田", "西坂町宮床65", 35.370996, 135.194790, 0],
+  ["21", "長松寺", "志賀郷", "坊口町林3", 35.387786, 135.236383, 0],
+  ["22", "宝満寺", "志賀郷", "西方町大坊29", 35.384172, 135.209619, 0],
+  ["23", "長福寺", "志賀郷", "向田町", 35.363651, 135.251236, 1],
+  ["24", "慈眼寺", "物部・西八田", "上八田町高柳2", 35.354697, 135.285602, 0],
+  ["25", "岩王寺", "物部・西八田", "七百石町寺ノ段1", 35.364469, 135.297416, 0],
+  ["26", "安国寺", "東八田", "安国寺町寺ノ段1", 35.340889, 135.307254, 0],
+  ["27", "禅徳寺", "東八田", "上杉町森東8", 35.354720, 135.316780, 0],
+  ["28", "施福寺", "東八田", "上杉町寺ノ迫19", 35.357279, 135.341466, 0],
+  ["29", "日円寺", "上林", "井根町寺ノ段34", 35.351055, 135.359849, 0],
+  ["30", "善福寺", "上林", "睦合町大門段65", 35.359077, 135.393048, 0],
+  ["31", "上林禅寺", "上林", "八津合町村中1", 35.366548, 135.409143, 0],
+  ["32", "五泉寺", "上林", "五津合町西巻49", 35.409335, 135.417793, 1],
+  ["33", "光明寺", "上林", "睦寄町君尾1", 35.389699, 135.442221, 0],
+  ["B1", "妙徳寺", "物部・西八田", "渕垣町奥ノ谷35の乙", 35.322343, 135.290837, 0],
+  ["B2", "長福寺", "豊里東", "栗町", 35.316380, 135.221451, 1],
+  ["B3", "雲源寺", "東八田", "梅迫町中町49", 35.344821, 135.309648, 0],
+  ["B4", "随岸寺", "中筋・山家", "和木町西浦26", 35.279490, 135.288535, 0],
+  ["B5", "高源寺", "豊里西", "小畑町松原150", 35.350866, 135.194497, 0],
+  ["B6", "久香寺", "東八田", "梅迫町正月谷12", 35.346589, 135.309333, 0],
+];
+function presetTemples() {
+  return PRESET.map(([no, name, area, addr, lat, lng, approx]) => ({
+    id: "p" + no,          // 札番から固定ID（読み込み直してもスタンプが残る）
+    no, name,
+    note: area + "｜" + addr,
+    lat, lng,
+    approx: !!approx
+  }));
+}
+function loadPreset() {
+  state.temples = presetTemples();
+  save();
+}
+
+/* ---------- 保存・読込 ---------- */
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.temples)) state = Object.assign(state, d);
+      state.settings = Object.assign({ radius: 100, allowManual: false }, d.settings || {});
+    }
+  } catch (e) { /* 壊れたデータは無視して初期状態で開始 */ }
+  if (!state.temples.length) loadPreset();   // 初回は札所リストを自動登録
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+/* ---------- 距離・方角 ---------- */
+function distM(a, b) {
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const s = Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function direction(a, b) {
+  const r = Math.PI / 180;
+  const y = Math.sin((b.lng - a.lng) * r) * Math.cos(b.lat * r);
+  const x = Math.cos(a.lat * r) * Math.sin(b.lat * r) -
+    Math.sin(a.lat * r) * Math.cos(b.lat * r) * Math.cos((b.lng - a.lng) * r);
+  const deg = (Math.atan2(y, x) / r + 360) % 360;
+  const names = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
+  return names[Math.round(deg / 45) % 8];
+}
+function fmtDist(m) {
+  if (m < 1000) return Math.round(m) + " m";
+  return (m / 1000).toFixed(m < 10000 ? 1 : 0) + " km";
+}
+
+/* ---------- GPS ---------- */
+const chip = document.getElementById("gpsChip");
+function startGPS() {
+  if (!navigator.geolocation) { setChip("err", "GPS 非対応"); return; }
+  if (watchId !== null) return;
+  setChip("", "GPS 取得中…");
+  watchId = navigator.geolocation.watchPosition(
+    p => {
+      pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy };
+      setChip("on", "GPS ● 精度 " + Math.round(pos.acc) + "m");
+      renderJunpai();
+    },
+    err => {
+      watchId = null;
+      if (err.code === 1) setChip("err", "位置情報が許可されていません");
+      else setChip("err", "GPS 取得失敗（タップで再試行）");
+      showGpsBanner(err);
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+  );
+}
+function inIframe() {
+  try { return window.self !== window.top; } catch (e) { return true; }
+}
+function showGpsBanner(err) {
+  const box = document.getElementById("gpsBanner");
+  const msg = document.getElementById("gpsBannerMsg");
+  let text;
+  if (err.code === 1 && inIframe()) {
+    text = "この開き方（埋め込み画面）では、位置情報の利用がページ側でブロックされています。端末の設定では直せません。SafariやChromeで直接開くか、「距離判定なしで使う」に切り替えてください。";
+  } else if (err.code === 1) {
+    text = "ブラウザの設定で位置情報が拒否されています。サイトの設定で claude.ai の位置情報を「許可」にして、もう一度試してください。";
+  } else if (err.code === 3) {
+    text = "位置情報の取得に時間がかかっています。空の開けた場所でもう一度試してください。";
+  } else {
+    text = "位置情報を取得できませんでした（" + (err.message || "原因不明") + "）。もう一度試すか、「距離判定なしで使う」に切り替えてください。";
+  }
+  msg.textContent = text;
+  box.classList.remove("hidden");
+}
+document.getElementById("btnRetryGps").addEventListener("click", () => {
+  document.getElementById("gpsBanner").classList.add("hidden");
+  startGPS();
+});
+document.getElementById("btnNoGps").addEventListener("click", () => {
+  state.settings.allowManual = true;
+  save();
+  document.getElementById("gpsBanner").classList.add("hidden");
+  toast("距離判定なしモードにしました。各寺で直接チェックインできます");
+  renderJunpai();
+});
+function stopGPS() {
+  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  pos = null;
+  setChip("", "GPS 停止中 ▶");
+  renderJunpai();
+}
+function setChip(cls, text) { chip.className = cls; chip.textContent = text; }
+chip.addEventListener("click", () => { (watchId === null) ? startGPS() : stopGPS(); });
+
+/* ---------- タブ ---------- */
+function showTab(name) {
+  for (const t of ["junpai", "book", "settings"]) {
+    document.getElementById("view-" + t).classList.toggle("hidden", t !== name);
+    document.getElementById("tab-" + t).classList.toggle("active", t === name);
+  }
+  if (name === "junpai") renderJunpai();
+  if (name === "book") renderBook();
+  if (name === "settings") renderSettings();
+}
+
+/* ---------- 巡拝タブ ---------- */
+function renderJunpai() {
+  const list = document.getElementById("templeList");
+  const empty = document.getElementById("junpaiEmpty");
+  const done = Object.keys(state.stamps).filter(id => state.temples.some(t => t.id === id)).length;
+  document.getElementById("cntDone").textContent = done;
+  document.getElementById("cntAll").textContent = state.temples.length;
+  document.getElementById("barFill").style.width =
+    state.temples.length ? (100 * done / state.temples.length) + "%" : "0%";
+
+  if (!state.temples.length) {
+    list.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  // 未参拝を先に、GPSがあれば近い順
+  const items = state.temples.map(t => {
+    const d = pos ? distM(pos, t) : null;
+    return { t, d, stamped: !!state.stamps[t.id] };
+  });
+  items.sort((a, b) => {
+    if (a.stamped !== b.stamped) return a.stamped ? 1 : -1;
+    if (a.d !== null && b.d !== null) return a.d - b.d;
+    return 0;
+  });
+
+  list.innerHTML = "";
+  for (const it of items) {
+    const { t, d, stamped } = it;
+    const card = document.createElement("div");
+    card.className = "temple" + (stamped ? " done" : "");
+
+    const info = document.createElement("div");
+    info.className = "info";
+    const nm = document.createElement("div");
+    nm.className = "name";
+    if (t.no) {
+      const badge = document.createElement("span");
+      badge.className = "fuda";
+      badge.textContent = fudaLabel(t.no);
+      nm.appendChild(badge);
+    }
+    nm.appendChild(document.createTextNode(t.name));
+    info.appendChild(nm);
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    if (stamped) {
+      meta.textContent = "参拝日：" + fmtDate(state.stamps[t.id]);
+    } else if (d !== null) {
+      const dir = document.createElement("span");
+      dir.className = "dir";
+      dir.textContent = direction(pos, t);
+      meta.appendChild(dir);
+      meta.appendChild(document.createTextNode(" " + fmtDist(d)));
+    } else {
+      meta.textContent = "GPSを開始すると距離が出ます";
+    }
+    if (t.approx && !stamped) {
+      const ap = document.createElement("span");
+      ap.style.color = "var(--shu)";
+      ap.textContent = "位置おおよそ";
+      meta.appendChild(ap);
+    }
+    info.appendChild(meta);
+    if (t.note) {
+      const note = document.createElement("div");
+      note.className = "note";
+      note.textContent = t.note;
+      info.appendChild(note);
+    }
+    card.appendChild(info);
+
+    if (stamped) {
+      const mini = document.createElement("div");
+      mini.className = "mini-stamp";
+      mini.textContent = "参拝";
+      card.appendChild(mini);
+    } else {
+      const btn = document.createElement("button");
+      btn.className = "btn-checkin";
+      // 位置がおおよその札所は1km以内でチェックイン可
+      const r = t.approx ? Math.max(state.settings.radius, 1000) : state.settings.radius;
+      const inRange = d !== null && d <= r;
+      const manual = state.settings.allowManual;
+      if (inRange || manual) {
+        btn.textContent = "チェックイン";
+        btn.addEventListener("click", () => checkin(t.id));
+      } else {
+        btn.textContent = d === null ? "GPS待ち" : "あと " + fmtDist(Math.max(0, d - r));
+        btn.disabled = true;
+      }
+      card.appendChild(btn);
+    }
+    list.appendChild(card);
+  }
+}
+
+function checkin(id) {
+  const t = state.temples.find(x => x.id === id);
+  if (!t || state.stamps[id]) return;
+  state.stamps[id] = new Date().toISOString();
+  save();
+  freshId = id;
+  if (navigator.vibrate) navigator.vibrate(80);
+  toast("「" + t.name + "」に参拝しました 🙏");
+  showTab("book");
+}
+
+/* ---------- スタンプ帳 ---------- */
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
+}
+function renderBook() {
+  const grid = document.getElementById("bookGrid");
+  const empty = document.getElementById("bookEmpty");
+  const mangan = document.getElementById("manganBox");
+  grid.innerHTML = "";
+  if (!state.temples.length) {
+    empty.classList.remove("hidden");
+    mangan.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+  const done = state.temples.filter(t => state.stamps[t.id]).length;
+  mangan.classList.toggle("hidden", done !== state.temples.length);
+
+  state.temples.forEach((t, i) => {
+    const stamped = !!state.stamps[t.id];
+    const cell = document.createElement("div");
+    cell.className = "stamp-cell " + (stamped ? "stamped" : "pending");
+    if (stamped && t.id === freshId) cell.classList.add("fresh");
+
+    const num = document.createElement("span");
+    num.className = "num";
+    num.textContent = t.no ? fudaLabel(t.no) : "其の" + kanjiNum(i + 1);
+    cell.appendChild(num);
+
+    const seal = document.createElement("div");
+    seal.className = "seal";
+    // 名前ごとに少しだけ傾きを変える（押印の揺らぎ）
+    let h = 0;
+    for (const c of t.id) h = (h * 31 + c.charCodeAt(0)) % 997;
+    seal.style.transform = "rotate(" + ((h % 9) - 4) + "deg)";
+    const sn = document.createElement("span");
+    sn.className = "sname";
+    sn.textContent = stamped ? sealName(t.name) : "未";
+    seal.appendChild(sn);
+    cell.appendChild(seal);
+
+    const nm = document.createElement("div");
+    nm.className = "tname";
+    nm.textContent = t.name;
+    cell.appendChild(nm);
+
+    const dt = document.createElement("div");
+    dt.className = "sdate";
+    dt.textContent = stamped ? fmtDate(state.stamps[t.id]) : "未参拝";
+    cell.appendChild(dt);
+
+    grid.appendChild(cell);
+  });
+  freshId = null;
+}
+function sealName(name) {
+  // 印に入れる名前：「第◯番」等の前置きを除き、6文字まで
+  const m = name.replace(/^第?[0-9０-９一二三四五六七八九十百]+番?\s*/, "").trim();
+  return (m || name).slice(0, 6);
+}
+function fudaLabel(no) {
+  if (/^B/i.test(no)) return "番外";
+  return "第" + kanjiNum(parseInt(no, 10)) + "番";
+}
+function kanjiNum(n) {
+  const k = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  if (n < 10) return k[n];
+  if (n < 20) return "十" + k[n % 10];
+  if (n < 100) return k[Math.floor(n / 10)] + "十" + k[n % 10];
+  return String(n);
+}
+
+/* ---------- 設定タブ ---------- */
+function renderSettings() {
+  document.getElementById("selRadius").value = String(state.settings.radius);
+  document.getElementById("chkManual").checked = !!state.settings.allowManual;
+  const box = document.getElementById("settingsList");
+  const empty = document.getElementById("settingsEmpty");
+  box.innerHTML = "";
+  empty.classList.toggle("hidden", state.temples.length > 0);
+  state.temples.forEach((t, i) => {
+    const row = document.createElement("div");
+    row.className = "t-row";
+    const nm = document.createElement("div");
+    nm.className = "nm";
+    nm.textContent = (t.no ? fudaLabel(t.no) + " " : "") + t.name;
+    const cd = document.createElement("div");
+    cd.className = "coord";
+    cd.textContent = t.lat.toFixed(4) + ", " + t.lng.toFixed(4) + (t.approx ? "（おおよそ）" : "");
+    nm.appendChild(document.createElement("br"));
+    nm.appendChild(cd);
+    row.appendChild(nm);
+
+    const fix = document.createElement("button");
+    fix.className = "btn small";
+    fix.textContent = "現在地";
+    fix.title = "この寺の位置を現在地に修正";
+    fix.addEventListener("click", () => {
+      if (!confirm("「" + t.name + "」の位置を今いる場所に修正しますか？\n（山門や本堂の前で押してください）")) return;
+      if (!navigator.geolocation) { toast("この端末はGPSに対応していません"); return; }
+      toast("現在地を取得中…");
+      navigator.geolocation.getCurrentPosition(
+        p => {
+          t.lat = p.coords.latitude; t.lng = p.coords.longitude; t.approx = false;
+          save(); renderSettings();
+          toast("「" + t.name + "」の位置を修正しました");
+        },
+        () => toast("現在地を取得できませんでした"),
+        { enableHighAccuracy: true, timeout: 15000 }
+      );
+    });
+    row.appendChild(fix);
+
+    const up = document.createElement("button");
+    up.className = "btn small"; up.textContent = "↑"; up.disabled = i === 0;
+    up.addEventListener("click", () => {
+      [state.temples[i - 1], state.temples[i]] = [state.temples[i], state.temples[i - 1]];
+      save(); renderSettings();
+    });
+    row.appendChild(up);
+
+    const del = document.createElement("button");
+    del.className = "btn small danger";
+    del.textContent = "削除";
+    del.addEventListener("click", () => {
+      if (!confirm("「" + t.name + "」を削除しますか？（スタンプも消えます）")) return;
+      state.temples = state.temples.filter(x => x.id !== t.id);
+      delete state.stamps[t.id];
+      save(); renderSettings();
+    });
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+
+function parseCoord(text) {
+  const m = String(text).match(/(-?\d{1,3}\.?\d*)[,\s、]+(-?\d{1,3}\.?\d*)/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+  if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+}
+function addTemple(lat, lng) {
+  const name = document.getElementById("inName").value.trim();
+  if (!name) { toast("寺院名を入力してください"); return; }
+  state.temples.push({
+    id: "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name,
+    note: document.getElementById("inNote").value.trim(),
+    lat, lng
+  });
+  save();
+  document.getElementById("inName").value = "";
+  document.getElementById("inNote").value = "";
+  document.getElementById("inCoord").value = "";
+  toast("「" + name + "」を登録しました");
+  renderSettings();
+}
+document.getElementById("btnAdd").addEventListener("click", () => {
+  const c = parseCoord(document.getElementById("inCoord").value);
+  if (!c) { toast("座標は「緯度, 経度」の形で入力してください"); return; }
+  addTemple(c.lat, c.lng);
+});
+document.getElementById("btnHere").addEventListener("click", () => {
+  if (!navigator.geolocation) { toast("この端末はGPSに対応していません"); return; }
+  toast("現在地を取得中…");
+  navigator.geolocation.getCurrentPosition(
+    p => addTemple(p.coords.latitude, p.coords.longitude),
+    () => toast("現在地を取得できませんでした"),
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+});
+document.getElementById("btnPreset").addEventListener("click", () => {
+  if (!confirm("札所リスト（33ヶ所＋番外6ヶ寺）を最初の状態に入れ直します。\nスタンプは残りますが、位置の修正・自分で追加したお寺は消えます。よろしいですか？")) return;
+  loadPreset();
+  renderSettings();
+  toast("札所リストを入れ直しました");
+});
+document.getElementById("selRadius").addEventListener("change", e => {
+  state.settings.radius = parseInt(e.target.value, 10); save();
+});
+document.getElementById("chkManual").addEventListener("change", e => {
+  state.settings.allowManual = e.target.checked; save();
+});
+
+/* ---------- 控え（バックアップ） ---------- */
+const ioArea = document.getElementById("ioArea");
+document.getElementById("btnExport").addEventListener("click", () => {
+  ioArea.classList.remove("hidden");
+  ioArea.value = JSON.stringify(state);
+  ioArea.select();
+  try {
+    navigator.clipboard.writeText(ioArea.value).then(
+      () => toast("控えをコピーしました。メモ帳などに保存してください"),
+      () => toast("下の欄の文字列を長押しでコピーして保存してください"));
+  } catch (e) {
+    toast("下の欄の文字列をコピーして保存してください");
+  }
+});
+document.getElementById("btnImport").addEventListener("click", () => {
+  if (ioArea.classList.contains("hidden") || !ioArea.value.trim()) {
+    ioArea.classList.remove("hidden");
+    ioArea.value = "";
+    ioArea.focus();
+    toast("控えのデータを貼り付けて、もう一度押してください");
+    return;
+  }
+  try {
+    const d = JSON.parse(ioArea.value);
+    if (!d || !Array.isArray(d.temples)) throw new Error();
+    if (!confirm("現在の記録を控えの内容で置き換えます。よろしいですか？")) return;
+    state = { temples: d.temples, stamps: d.stamps || {}, settings: Object.assign({ radius: 100, allowManual: false }, d.settings) };
+    save();
+    ioArea.value = ""; ioArea.classList.add("hidden");
+    toast("控えを読み込みました");
+    renderSettings();
+  } catch (e) {
+    toast("データの形式が正しくありません");
+  }
+});
+document.getElementById("btnResetStamps").addEventListener("click", () => {
+  if (!confirm("すべてのスタンプ（参拝記録）を消します。お寺の登録は残ります。よろしいですか？")) return;
+  state.stamps = {};
+  save();
+  toast("スタンプを消しました");
+});
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+/* ---------- 起動 ---------- */
+load();
+renderJunpai();
+startGPS();
+</script>
+
+</html>
