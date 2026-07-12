@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
+<script src="temples.js"></script>
 <title>巡拝スタンプ帳</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
@@ -246,37 +247,8 @@
     font-size: 11px; color: var(--sumi-soft);
     font-family: "Hiragino Mincho ProN", serif;
   }
-  .seal {
-    width: 88px; height: 88px;
-    border: 3px solid var(--shu);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    color: var(--shu);
-  }
-  .seal::before {
-    content: "";
-    position: absolute; inset: 4px;
-    border: 1px solid var(--shu);
-    border-radius: 50%;
-    opacity: .7;
-  }
-  .seal .sname {
-    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
-    writing-mode: vertical-rl;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    max-height: 70px;
-    overflow: hidden;
-    line-height: 1.15;
-  }
-  .stamp-cell.pending .seal {
-    border-style: dashed;
-    border-color: var(--line);
-    color: var(--line);
-  }
-  .stamp-cell.pending .seal::before { display: none; }
+  .seal { display: flex; align-items: center; justify-content: center; }
+  .sealsvg { display: block; }
   .stamp-cell .sdate {
     font-size: 11px;
     color: var(--sumi-soft);
@@ -290,9 +262,9 @@
   }
   .stamp-cell.stamped .seal { animation: none; }
   @keyframes press {
-    0% { transform: scale(2.2) rotate(-10deg); opacity: 0; }
-    60% { transform: scale(.95) rotate(-3deg); opacity: 1; }
-    100% { transform: scale(1) rotate(-3deg); }
+    0% { transform: scale(2.2) rotate(-8deg); opacity: 0; }
+    60% { transform: scale(.95); opacity: 1; }
+    100% { transform: scale(1); }
   }
   .stamp-cell.fresh .seal { animation: press .5s ease-out both; }
   @media (prefers-reduced-motion: reduce) {
@@ -419,6 +391,69 @@
   nav button .ico { display: block; font-size: 19px; margin-bottom: 2px; }
   nav button.active { color: var(--shu); font-weight: 700; }
 
+  /* ---------- overlay ---------- */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(25, 18, 10, .55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 30;
+    padding: 18px;
+  }
+  .ov-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    max-width: 420px; width: 100%;
+    max-height: 88vh; overflow-y: auto;
+    padding: 22px 20px;
+    position: relative;
+  }
+  .ov-close {
+    position: absolute; top: 10px; right: 10px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--washi);
+    color: var(--sumi-soft);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .detail-head {
+    text-align: center;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  }
+  .detail-head .dname { font-size: 22px; font-weight: 700; letter-spacing: .1em; }
+  .detail-head .dkana { font-size: 12px; color: var(--sumi-soft); letter-spacing: .2em; }
+  .detail-seal { display: flex; justify-content: center; margin: 14px 0 6px; }
+  .drow { display: flex; gap: 10px; font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .drow:last-child { border-bottom: none; }
+  .drow .dt { color: var(--sumi-soft); white-space: nowrap; min-width: 4em; }
+  .goeika {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    background: var(--washi);
+    border-left: 3px solid var(--shu);
+    padding: 10px 14px;
+    margin: 12px 0 4px;
+    font-size: 14.5px;
+    line-height: 2;
+    letter-spacing: .06em;
+  }
+  /* ---------- 満願之証 ---------- */
+  .cert {
+    border: 4px double var(--shu);
+    padding: 26px 16px 22px;
+    text-align: center;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    color: var(--sumi);
+    position: relative;
+  }
+  .cert .ctitle { font-size: 30px; font-weight: 700; letter-spacing: .45em; text-indent: .45em; color: var(--shu); }
+  .cert .cname { font-size: 21px; font-weight: 600; margin: 18px 0 4px; letter-spacing: .12em; border-bottom: 1px solid var(--sumi-soft); display: inline-block; padding: 0 14px 2px; min-width: 7em; }
+  .cert .cbody { font-size: 13.5px; line-height: 2.1; margin: 14px 0 10px; letter-spacing: .1em; }
+  .cert .cdates { font-size: 12.5px; color: var(--sumi-soft); letter-spacing: .1em; }
+  .cert .cfoot { margin-top: 14px; font-size: 13px; letter-spacing: .2em; }
+  .cert .cseal { position: absolute; right: 12px; bottom: 12px; opacity: .92; }
+
   .toast {
     position: fixed;
     left: 50%; bottom: 90px;
@@ -472,6 +507,7 @@
     <div id="manganBox" class="mangan hidden">
       <div class="big">満　願</div>
       <p>すべての霊場を巡拝されました。おめでとうございます。</p>
+      <button class="btn primary" id="btnCert" type="button" style="margin-top:12px">満願之証を表示</button>
     </div>
     <div class="book" id="bookGrid"></div>
     <div id="bookEmpty" class="empty hidden">
@@ -551,6 +587,9 @@
 </nav>
 
 <div class="toast" id="toast"></div>
+<div id="overlay" class="overlay hidden">
+  <div class="ov-card" id="ovCard"></div>
+</div>
 
 <script>
 "use strict";
@@ -560,62 +599,40 @@ let pos = null;          // {lat, lng, acc}
 let watchId = null;
 let freshId = null;      // 直前に押したスタンプ（アニメ用）
 
-/* ---------- 綾部西国観音霊場 札所プリセット ----------
-   位置の出典: OpenStreetMap / 国土地理院 / NAVITIME / いいお墓 / Yahoo!マップ
+/* ---------- 綾部西国観音霊場 札所データ ----------
+   temples.js（temples_master.csv から自動生成）を読み込む。
    approx: true は町の代表点などおおよその位置（現地で「現在地」ボタンで修正可） */
-const PRESET = [
-  ["1", "正暦寺", "綾部", "寺町堂ノ前45", 35.292149, 135.262579, 0],
-  ["2", "隆興寺", "綾部", "神宮寺町上藤山2-1", 35.295144, 135.256100, 0],
-  ["3", "宝住寺", "綾部", "味方町井上寺48", 35.292843, 135.269877, 0],
-  ["4", "栴林寺", "中筋・山家", "釜輪町下尾道ノ上", 35.294019, 135.331692, 0],
-  ["5", "照福寺", "中筋・山家", "鷹栖町小丸山33", 35.296513, 135.314301, 0],
-  ["6", "梅岩寺", "物部・西八田", "下八田町水崎26", 35.309649, 135.280317, 0],
-  ["7", "佛南寺", "綾部", "里町向屋敷103", 35.315262, 135.258926, 0],
-  ["8", "圓照寺", "綾部", "多田町後路55", 35.321823, 135.268234, 0],
-  ["9", "東光院", "中筋・山家", "上延町堂ノ奥7", 35.295414, 135.229828, 0],
-  ["10", "慈音寺", "中筋・山家", "上延町新庄15", 35.299454, 135.232066, 0],
-  ["11", "隠龍寺", "中筋・山家", "高津町段30", 35.298710, 135.208420, 0],
-  ["12", "浄泉寺", "豊里東", "位田町田岸63", 35.314053, 135.248932, 0],
-  ["13", "瑠璃寺", "豊里東", "大畠町東谷田40", 35.336369, 135.227219, 1],
-  ["14", "楞厳寺", "豊里東", "舘町楞厳寺6", 35.323750, 135.223572, 0],
-  ["15", "惣持院", "豊里西", "小西町中小路24", 35.332866, 135.207753, 0],
-  ["16", "普門院", "豊里西", "鍛冶屋町定国3", 35.340976, 135.194300, 0],
-  ["17", "天王寺", "豊里西", "小畑町松原116", 35.350265, 135.193541, 0],
-  ["18", "心田院", "綾部", "井倉町館3", 35.304706, 135.246388, 0],
-  ["19", "極楽寺", "物部・西八田", "白道路町鎌倉田34", 35.354041, 135.251756, 0],
-  ["20", "満福寺", "物部・西八田", "西坂町宮床65", 35.370996, 135.194790, 0],
-  ["21", "長松寺", "志賀郷", "坊口町林3", 35.387786, 135.236383, 0],
-  ["22", "宝満寺", "志賀郷", "西方町大坊29", 35.384172, 135.209619, 0],
-  ["23", "長福寺", "志賀郷", "向田町", 35.363651, 135.251236, 1],
-  ["24", "慈眼寺", "物部・西八田", "上八田町高柳2", 35.354697, 135.285602, 0],
-  ["25", "岩王寺", "物部・西八田", "七百石町寺ノ段1", 35.364469, 135.297416, 0],
-  ["26", "安国寺", "東八田", "安国寺町寺ノ段1", 35.340889, 135.307254, 0],
-  ["27", "禅徳寺", "東八田", "上杉町森東8", 35.354720, 135.316780, 0],
-  ["28", "施福寺", "東八田", "上杉町寺ノ迫19", 35.357279, 135.341466, 0],
-  ["29", "日円寺", "上林", "井根町寺ノ段34", 35.351055, 135.359849, 0],
-  ["30", "善福寺", "上林", "睦合町大門段65", 35.359077, 135.393048, 0],
-  ["31", "上林禅寺", "上林", "八津合町村中1", 35.366548, 135.409143, 0],
-  ["32", "五泉寺", "上林", "五津合町西巻49", 35.409335, 135.417793, 1],
-  ["33", "光明寺", "上林", "睦寄町君尾1", 35.389699, 135.442221, 0],
-  ["B1", "妙徳寺", "物部・西八田", "渕垣町奥ノ谷35の乙", 35.322343, 135.290837, 0],
-  ["B2", "長福寺", "豊里東", "栗町", 35.316380, 135.221451, 1],
-  ["B3", "雲源寺", "東八田", "梅迫町中町49", 35.344821, 135.309648, 0],
-  ["B4", "随岸寺", "中筋・山家", "和木町西浦26", 35.279490, 135.288535, 0],
-  ["B5", "高源寺", "豊里西", "小畑町松原150", 35.350866, 135.194497, 0],
-  ["B6", "久香寺", "東八田", "梅迫町正月谷12", 35.346589, 135.309333, 0],
-];
 function presetTemples() {
-  return PRESET.map(([no, name, area, addr, lat, lng, approx]) => ({
-    id: "p" + no,          // 札番から固定ID（読み込み直してもスタンプが残る）
-    no, name,
-    note: area + "｜" + addr,
-    lat, lng,
-    approx: !!approx
+  return (window.TEMPLE_DATA || []).map(d => ({
+    id: 'p' + d.no,        // 札番から固定ID（読み込み直してもスタンプが残る）
+    no: d.no, name: d.name, kana: d.kana || '',
+    note: d.area + '｜' + d.addr,
+    lat: d.lat, lng: d.lng, approx: !!d.approx,
+    sect: d.sect || '', sango: d.sango || '', honzon: d.honzon || '',
+    shuji: d.shuji || '', goeika: d.goeika || '', memo: d.memo || ''
   }));
 }
 function loadPreset() {
   state.temples = presetTemples();
   save();
+}
+/* 保存済みデータに、temples.js側の最新情報（宗派・御詠歌・座標修正など）を反映する。
+   利用者が「現在地」で自分修正した座標(userFixed)だけは残す */
+function syncPreset() {
+  const map = {};
+  for (const p of presetTemples()) map[p.id] = p;
+  let changed = false;
+  for (const t of state.temples) {
+    const p = map[t.id];
+    if (!p) continue;
+    for (const k of ["no", "name", "kana", "note", "sect", "sango", "honzon", "shuji", "goeika", "memo"]) {
+      if (t[k] !== p[k]) { t[k] = p[k]; changed = true; }
+    }
+    if (!t.userFixed && (t.lat !== p.lat || t.lng !== p.lng || t.approx !== p.approx)) {
+      t.lat = p.lat; t.lng = p.lng; t.approx = p.approx; changed = true;
+    }
+  }
+  if (changed) save();
 }
 
 /* ---------- 保存・読込 ---------- */
@@ -629,6 +646,7 @@ function load() {
     }
   } catch (e) { /* 壊れたデータは無視して初期状態で開始 */ }
   if (!state.temples.length) loadPreset();   // 初回は札所リストを自動登録
+  else syncPreset();                          // 2回目以降は最新の札所情報を反映
 }
 function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
 
@@ -797,6 +815,7 @@ function renderJunpai() {
       note.textContent = t.note;
       info.appendChild(note);
     }
+    info.addEventListener("click", () => showDetail(t));
     card.appendChild(info);
 
     if (stamped) {
@@ -867,15 +886,9 @@ function renderBook() {
 
     const seal = document.createElement("div");
     seal.className = "seal";
-    // 名前ごとに少しだけ傾きを変える（押印の揺らぎ）
-    let h = 0;
-    for (const c of t.id) h = (h * 31 + c.charCodeAt(0)) % 997;
-    seal.style.transform = "rotate(" + ((h % 9) - 4) + "deg)";
-    const sn = document.createElement("span");
-    sn.className = "sname";
-    sn.textContent = stamped ? sealName(t.name) : "未";
-    seal.appendChild(sn);
+    seal.appendChild(sealSVG(t, stamped, 92));
     cell.appendChild(seal);
+    cell.addEventListener("click", () => showDetail(t));
 
     const nm = document.createElement("div");
     nm.className = "tname";
@@ -895,6 +908,85 @@ function sealName(name) {
   // 印に入れる名前：「第◯番」等の前置きを除き、6文字まで
   const m = name.replace(/^第?[0-9０-９一二三四五六七八九十百]+番?\s*/, "").trim();
   return (m || name).slice(0, 6);
+}
+/* 印影SVG生成: 外周リング=霊場名+札番、中央=種子(あれば)+縦書き寺名 */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sealSVG(t, stamped, size) {
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("width", size); svg.setAttribute("height", size);
+  svg.classList.add("sealsvg");
+  const color = stamped ? "var(--shu)" : "var(--line)";
+  const mk = (tag, attrs) => {
+    const el = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    svg.appendChild(el);
+    return el;
+  };
+  // 外円・内円
+  const c1 = mk("circle", { cx: 50, cy: 50, r: 47.5, fill: "none", stroke: color, "stroke-width": 3.2 });
+  const c2 = mk("circle", { cx: 50, cy: 50, r: 36.5, fill: "none", stroke: color, "stroke-width": 1 });
+  if (!stamped) { c1.setAttribute("stroke-dasharray", "5 4"); c1.setAttribute("stroke-width", "2"); }
+  // 環状文字用パス（上弧・下弧）
+  const defs = document.createElementNS(SVGNS, "defs");
+  const arc = (id, d) => {
+    const p = document.createElementNS(SVGNS, "path");
+    p.setAttribute("id", id); p.setAttribute("d", d); p.setAttribute("fill", "none");
+    defs.appendChild(p);
+  };
+  const uid = "a" + Math.random().toString(36).slice(2, 7);
+  arc(uid + "t", "M 9,50 A 41,41 0 0 1 91,50");    // 上弧（左→右）
+  arc(uid + "b", "M 13.5,50 A 36.5,36.5 0 0 0 86.5,50"); // 下弧（左→右・外向き文字）
+  svg.appendChild(defs);
+  const ringText = (href, text, fs, dy) => {
+    const tx = document.createElementNS(SVGNS, "text");
+    tx.setAttribute("fill", color);
+    tx.setAttribute("font-size", fs);
+    tx.setAttribute("letter-spacing", "1.5");
+    tx.setAttribute("style", "font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700");
+    const tp = document.createElementNS(SVGNS, "textPath");
+    tp.setAttribute("href", "#" + href);
+    tp.setAttribute("startOffset", "50%");
+    tp.setAttribute("text-anchor", "middle");
+    if (dy) tp.setAttribute("baseline-shift", dy);
+    tp.textContent = text;
+    tx.appendChild(tp);
+    svg.appendChild(tx);
+  };
+  ringText(uid + "t", "綾部西国観音霊場", 8.4);
+  ringText(uid + "b", t.no ? fudaLabel(t.no) : "巡拝", 8.4, "-70%");
+  // 中央: 種子（梵字）があれば上に、寺名を縦書きで
+  const nm = stamped ? sealName(t.name) : "未";
+  const chars = nm.split("");
+  const hasShuji = stamped && t.shuji;
+  const areaTop = hasShuji ? 36 : 30;   // 名前の開始位置
+  if (hasShuji) {
+    const sj = mk("text", {
+      x: 50, y: 27, "text-anchor": "middle", fill: color, "font-size": 15,
+      style: "font-family:'Noto Sans Siddham','Hiragino Mincho ProN',serif;font-weight:700"
+    });
+    sj.textContent = t.shuji;
+  }
+  const avail = 92 - areaTop;                        // 縦に使える高さ
+  const fs = Math.min(15, avail / Math.max(chars.length, 1) * 0.92);
+  const totalH = fs * 1.06 * chars.length;
+  let y = areaTop + (avail - totalH) / 2 + fs * 0.85;
+  const nameText = mk("text", {
+    x: 50, "text-anchor": "middle", fill: color, "font-size": fs,
+    style: "font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700;letter-spacing:0"
+  });
+  for (const ch of chars) {
+    const ts = document.createElementNS(SVGNS, "tspan");
+    ts.setAttribute("x", 50); ts.setAttribute("y", y);
+    ts.textContent = ch;
+    nameText.appendChild(ts);
+    y += fs * 1.06;
+  }
+  // 押印の揺らぎ（寺ごとに固定の傾き）
+  let h = 0;
+  for (const c of t.id) h = (h * 31 + c.charCodeAt(0)) % 997;
+  svg.style.transform = "rotate(" + ((h % 9) - 4) + "deg)";
+  return svg;
 }
 function fudaLabel(no) {
   if (/^B/i.test(no)) return "番外";
@@ -939,7 +1031,7 @@ function renderSettings() {
       toast("現在地を取得中…");
       navigator.geolocation.getCurrentPosition(
         p => {
-          t.lat = p.coords.latitude; t.lng = p.coords.longitude; t.approx = false;
+          t.lat = p.coords.latitude; t.lng = p.coords.longitude; t.approx = false; t.userFixed = true;
           save(); renderSettings();
           toast("「" + t.name + "」の位置を修正しました");
         },
@@ -1063,6 +1155,116 @@ document.getElementById("btnResetStamps").addEventListener("click", () => {
   toast("スタンプを消しました");
 });
 
+/* ---------- オーバーレイ ---------- */
+const ovEl = document.getElementById("overlay");
+const ovCard = document.getElementById("ovCard");
+function openOverlay() { ovCard.innerHTML = ""; ovEl.classList.remove("hidden"); addClose(); }
+function closeOverlay() { ovEl.classList.add("hidden"); }
+function addClose() {
+  const b = document.createElement("button");
+  b.className = "ov-close"; b.textContent = "×"; b.setAttribute("aria-label", "閉じる");
+  b.addEventListener("click", closeOverlay);
+  ovCard.appendChild(b);
+}
+ovEl.addEventListener("click", e => { if (e.target === ovEl) closeOverlay(); });
+
+/* ---------- 札所の詳細 ---------- */
+function showDetail(t) {
+  openOverlay();
+  const stamped = !!state.stamps[t.id];
+  const head = document.createElement("div");
+  head.className = "detail-head";
+  const fd = document.createElement("div");
+  if (t.no) { const b = document.createElement("span"); b.className = "fuda"; b.textContent = fudaLabel(t.no); fd.appendChild(b); }
+  head.appendChild(fd);
+  const dn = document.createElement("div"); dn.className = "dname";
+  dn.textContent = (t.sango ? t.sango + " " : "") + t.name;
+  head.appendChild(dn);
+  if (t.kana) { const dk = document.createElement("div"); dk.className = "dkana"; dk.textContent = t.kana; head.appendChild(dk); }
+  ovCard.appendChild(head);
+
+  const sw = document.createElement("div");
+  sw.className = "detail-seal";
+  sw.appendChild(sealSVG(t, stamped, 150));
+  ovCard.appendChild(sw);
+
+  if (t.goeika) {
+    const g = document.createElement("div"); g.className = "goeika";
+    g.textContent = t.goeika;
+    ovCard.appendChild(g);
+  }
+  const rows = [
+    ["宗派", t.sect], ["御本尊", t.honzon],
+    ["所在", t.note],
+    ["参拝日", stamped ? fmtDate(state.stamps[t.id]) : "未参拝"],
+    ["", t.memo]
+  ];
+  for (const [k, v] of rows) {
+    if (!v) continue;
+    const r = document.createElement("div"); r.className = "drow";
+    if (k) { const dt = document.createElement("span"); dt.className = "dt"; dt.textContent = k; r.appendChild(dt); }
+    const dd = document.createElement("span"); dd.textContent = v; r.appendChild(dd);
+    ovCard.appendChild(r);
+  }
+}
+
+/* ---------- 満願之証 ---------- */
+function showCertificate() {
+  openOverlay();
+  const dates = state.temples.map(t => state.stamps[t.id]).filter(Boolean).sort();
+  const first = dates[0] ? fmtDate(dates[0]) : "";
+  const last = dates.length ? fmtDate(dates[dates.length - 1]) : "";
+  const cert = document.createElement("div");
+  cert.className = "cert";
+  const title = document.createElement("div"); title.className = "ctitle"; title.textContent = "満願之証";
+  cert.appendChild(title);
+  const nameEl = document.createElement("div"); nameEl.className = "cname";
+  const setName = () => { nameEl.textContent = (state.settings.name || "（タップして名入れ）") + (state.settings.name ? "　殿" : ""); };
+  setName();
+  nameEl.style.cursor = "pointer";
+  nameEl.addEventListener("click", () => {
+    const n = prompt("お名前を入力してください", state.settings.name || "");
+    if (n !== null) { state.settings.name = n.trim(); save(); setName(); }
+  });
+  cert.appendChild(nameEl);
+  const body = document.createElement("div"); body.className = "cbody";
+  body.textContent = "右の者 綾部西国観音霊場 三十三ヶ所並びに番外六ヶ寺を巡拝し めでたく満願成就せしことを証する";
+  cert.appendChild(body);
+  const cd = document.createElement("div"); cd.className = "cdates";
+  cd.textContent = "発願 " + first + "　／　結願 " + last;
+  cert.appendChild(cd);
+  const foot = document.createElement("div"); foot.className = "cfoot";
+  foot.textContent = "綾部西国観音霊場スタンプラリー";
+  cert.appendChild(foot);
+  const cs = document.createElement("div"); cs.className = "cseal";
+  cs.appendChild(sealSVG({ id: "cert", name: "満願", no: "" }, true, 66));
+  cert.appendChild(cs);
+  ovCard.appendChild(cert);
+  const hint = document.createElement("p");
+  hint.className = "hint"; hint.style.textAlign = "center"; hint.style.marginTop = "10px";
+  hint.textContent = "この画面をスクリーンショットして保存してください";
+  ovCard.appendChild(hint);
+}
+document.getElementById("btnCert").addEventListener("click", showCertificate);
+
+/* ---------- QRチェックイン ---------- */
+function qtoken(id) {
+  let h = 5381;
+  const s = "ayabe-kannon-reijo-2026-" + id;
+  for (const c of s) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0;
+  return ("000000" + h.toString(36)).slice(-6);
+}
+function handleHash() {
+  const m = location.hash.match(/^#q-(\w+)-([a-z0-9]{6})$/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  const t = state.temples.find(x => x.id === m[1]);
+  if (!t) { toast("QRコードに対応する札所が見つかりません"); return; }
+  if (qtoken(t.id) !== m[2]) { toast("QRコードが正しくありません"); return; }
+  if (state.stamps[t.id]) { toast("「" + t.name + "」は参拝済みです"); showTab("book"); return; }
+  checkin(t.id);
+}
+
 /* ---------- toast ---------- */
 let toastTimer = null;
 function toast(msg) {
@@ -1075,6 +1277,7 @@ function toast(msg) {
 
 /* ---------- 起動 ---------- */
 load();
+handleHash();      // QRコード経由のチェックイン
 renderJunpai();
 startGPS();
 </script>
